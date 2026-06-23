@@ -1,0 +1,996 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terracotta — Translational Risk Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --clay: #C98D69;
+    --terra: #AD524A;
+    --crimson: #751517;
+    --black: #000000;
+    --white: #FBFBFB;
+    --surface: #111111;
+    --border: #222222;
+  }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* NAV */
+  nav {
+    padding: 24px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--clay);
+    letter-spacing: 0.05em;
+  }
+
+  .logo span {
+    color: var(--white);
+    opacity: 0.4;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    margin-left: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .nav-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--terra);
+    border: 1px solid var(--terra);
+    padding: 4px 10px;
+    border-radius: 2px;
+    opacity: 0.7;
+  }
+
+  /* HERO */
+  .hero {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 80px 24px 48px;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--clay);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 6vw, 58px);
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 20px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--clay);
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--white);
+    opacity: 0.5;
+    line-height: 1.7;
+    font-weight: 300;
+    max-width: 480px;
+    margin: 0 auto 48px;
+  }
+
+  /* INPUT */
+  .input-row {
+    display: flex;
+    gap: 12px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .gene-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--white);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    padding: 14px 20px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+    text-transform: uppercase;
+  }
+
+  .gene-input::placeholder {
+    color: var(--white);
+    opacity: 0.2;
+    text-transform: none;
+  }
+
+  .gene-input:focus {
+    border-color: var(--clay);
+  }
+
+  .score-btn {
+    background: var(--terra);
+    color: var(--white);
+    border: none;
+    padding: 14px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .score-btn:hover { background: var(--clay); }
+  .score-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .example-genes {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--white);
+    opacity: 0.3;
+  }
+
+  .example-genes button {
+    background: none;
+    border: none;
+    color: var(--clay);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.7;
+    margin: 0 4px;
+  }
+
+  .example-genes button:hover { opacity: 1; }
+
+  /* LOADING */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+  }
+
+  .loading-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--clay);
+    opacity: 0.7;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* RESULTS */
+  .results {
+    display: none;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* VERDICT */
+  .verdict {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 32px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  /* GAUGE */
+  .gauge-wrap {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .gauge-wrap svg {
+    transform: rotate(-90deg);
+  }
+
+  .gauge-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 8;
+  }
+
+  .gauge-fill {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease, stroke 0.5s ease;
+  }
+
+  .gauge-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .verdict-main h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .verdict-main p {
+    font-size: 14px;
+    color: var(--white);
+    opacity: 0.6;
+    line-height: 1.6;
+    max-width: 460px;
+  }
+
+  .kill-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .kill-badge.Kill {
+    background: rgba(117, 21, 23, 0.2);
+    border: 1px solid var(--crimson);
+    color: #ff6b6b;
+  }
+
+  .kill-badge.Caution {
+    background: rgba(173, 82, 74, 0.2);
+    border: 1px solid var(--terra);
+    color: var(--clay);
+  }
+
+  .kill-badge.Pursue {
+    background: rgba(201, 141, 105, 0.15);
+    border: 1px solid var(--clay);
+    color: var(--clay);
+  }
+
+  /* SIGNAL LAYERS */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--white);
+    opacity: 0.3;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .signal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .signal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+  }
+
+  .signal-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .signal-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+    opacity: 0.5;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .signal-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .signal-bar-bg {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+
+  .signal-bar-fill {
+    height: 3px;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .signal-finding {
+    font-size: 13px;
+    color: var(--white);
+    opacity: 0.6;
+    line-height: 1.5;
+  }
+
+  /* BOTTOM ROW */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+  }
+
+  .info-card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--clay);
+    opacity: 0.7;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .info-card-value {
+    font-size: 14px;
+    color: var(--white);
+    opacity: 0.8;
+    line-height: 1.6;
+  }
+
+  .category-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(201, 141, 105, 0.1);
+    border: 1px solid rgba(201, 141, 105, 0.3);
+    color: var(--clay);
+    padding: 3px 8px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p {
+    font-size: 12px;
+    color: var(--white);
+    opacity: 0.2;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  @media (max-width: 600px) {
+    nav { padding: 16px 20px; }
+    .hero { padding: 48px 20px 32px; }
+    .signal-grid { grid-template-columns: 1fr; }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .verdict { grid-template-columns: 1fr; text-align: center; }
+    footer { padding: 20px; flex-direction: column; gap: 8px; }
+  }
+/* SERENDIPITY ENGINE */
+.serendipity-section {
+  display: none;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.ser-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.ser-score-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid var(--clay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--clay);
+  flex-shrink: 0;
+}
+
+.ser-header-text h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.ser-header-text p {
+  font-size: 13px;
+  color: var(--white);
+  opacity: 0.6;
+  line-height: 1.5;
+}
+
+.ser-insight {
+  background: rgba(201, 141, 105, 0.08);
+  border: 1px solid rgba(201, 141, 105, 0.25);
+  border-radius: 6px;
+  padding: 16px 20px;
+  font-size: 14px;
+  color: var(--clay);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.ser-gene-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.ser-gene-chip {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.ser-gene-chip.up {
+  background: rgba(201, 141, 105, 0.1);
+  border: 1px solid rgba(201, 141, 105, 0.3);
+}
+
+.ser-gene-chip.down {
+  background: rgba(117, 21, 23, 0.1);
+  border: 1px solid rgba(117, 21, 23, 0.3);
+}
+
+.ser-gene-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.ser-gene-corr {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--white);
+  opacity: 0.5;
+  font-size: 11px;
+}
+
+.ser-connection-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.ser-conn-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.ser-conn-gene {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clay);
+}
+
+.ser-conn-arrow {
+  color: var(--white);
+  opacity: 0.3;
+}
+
+.ser-conn-target {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--white);
+  opacity: 0.8;
+}
+
+.ser-conn-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: rgba(117, 21, 23, 0.2);
+  border: 1px solid var(--crimson);
+  color: #ff6b6b;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.ser-conn-indication {
+  font-size: 12px;
+  color: var(--white);
+  opacity: 0.4;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.ser-conn-note {
+  font-size: 13px;
+  color: var(--white);
+  opacity: 0.7;
+  line-height: 1.5;
+}
+
+.ser-suggestion {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+.ser-sugg-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ser-sugg-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--white);
+  opacity: 0.3;
+}
+
+.ser-sugg-priority {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.ser-sugg-priority.HIGH {
+  background: rgba(173, 82, 74, 0.2);
+  border: 1px solid var(--terra);
+  color: var(--clay);
+}
+
+.ser-sugg-priority.CRITICAL {
+  background: rgba(117, 21, 23, 0.2);
+  border: 1px solid var(--crimson);
+  color: #ff6b6b;
+}
+
+.ser-sugg-type {
+  font-size: 11px;
+  color: var(--white);
+  opacity: 0.4;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ser-sugg-text {
+  font-size: 14px;
+  color: var(--white);
+  opacity: 0.9;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.ser-sugg-rationale {
+  font-size: 12px;
+  color: var(--white);
+  opacity: 0.5;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.ser-loading {
+  text-align: center;
+  padding: 40px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--clay);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.ser-error {
+  display: none;
+  color: #ff6b6b;
+  font-size: 13px;
+  padding: 16px;
+  background: rgba(117,21,23,0.1);
+  border: 1px solid var(--crimson);
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">TERRACOTTA <span>Risk Engine v0.1</span></div>
+  <div class="nav-tag">ALPHA</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Translational Risk Engine</div>
+  <h1>Will your target <em>survive</em> translation?</h1>
+  <p>Terracotta scores any drug target for translational failure risk before a single experiment is designed.</p>
+
+  <div class="input-row">
+    <input class="gene-input" id="geneInput" type="text" placeholder="Enter gene name (e.g. BACE1)" maxlength="20" />
+    <button class="score-btn" id="scoreBtn" onclick="scoreGene(); runSerendipity();">Score Target</button>
+  </div>
+  <div class="example-genes">
+    Try:
+    <button onclick="fillGene('BACE1')">BACE1</button>
+    <button onclick="fillGene('PCSK9')">PCSK9</button>
+    <button onclick="fillGene('TNF')">TNF</button>
+    <button onclick="fillGene('MAPT')">MAPT</button>
+    <button onclick="fillGene('KRAS')">KRAS</button>
+  </div>
+</div>
+
+<div class="loading" id="loading">
+  <p class="loading-text">// Assembling biological signal layers...</p>
+</div>
+
+<div class="results" id="results">
+
+  <div class="verdict" id="verdict">
+    <div class="gauge-wrap">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle class="gauge-bg" cx="50" cy="50" r="40"/>
+        <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="40"
+          stroke-dasharray="251.2"
+          stroke-dashoffset="251.2"/>
+      </svg>
+      <div class="gauge-number" id="gaugeNumber">0</div>
+    </div>
+
+    <div class="verdict-main">
+      <h2 id="verdictGene">—</h2>
+      <p id="verdictSummary">—</p>
+    </div>
+
+    <div>
+      <div class="kill-badge" id="killBadge">—</div>
+    </div>
+  </div>
+
+  <div class="section-label">Signal Layers</div>
+  <div class="signal-grid">
+    <div class="signal-card">
+      <div class="signal-card-top">
+        <div class="signal-name">Species Conservation</div>
+        <div class="signal-score" id="s1score">—</div>
+      </div>
+      <div class="signal-bar-bg"><div class="signal-bar-fill" id="s1bar" style="width:0%"></div></div>
+      <div class="signal-finding" id="s1finding">—</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-top">
+        <div class="signal-name">Tissue Expression</div>
+        <div class="signal-score" id="s2score">—</div>
+      </div>
+      <div class="signal-bar-bg"><div class="signal-bar-fill" id="s2bar" style="width:0%"></div></div>
+      <div class="signal-finding" id="s2finding">—</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-top">
+        <div class="signal-name">Pathway Topology</div>
+        <div class="signal-score" id="s3score">—</div>
+      </div>
+      <div class="signal-bar-bg"><div class="signal-bar-fill" id="s3bar" style="width:0%"></div></div>
+      <div class="signal-finding" id="s3finding">—</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-top">
+        <div class="signal-name">Historical Concordance</div>
+        <div class="signal-score" id="s4score">—</div>
+      </div>
+      <div class="signal-bar-bg"><div class="signal-bar-fill" id="s4bar" style="width:0%"></div></div>
+      <div class="signal-finding" id="s4finding">—</div>
+    </div>
+  </div>
+
+  <div class="section-label">Assessment</div>
+  <div class="bottom-grid">
+    <div class="info-card">
+      <div class="info-card-label">Primary Risk Category</div>
+      <div class="category-badge" id="categoryBadge">—</div>
+      <div class="info-card-value" id="categoryName">—</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">Recommended Model System</div>
+      <div class="info-card-value" id="modelRec">—</div>
+    </div>
+  </div>
+
+</div>
+<!-- SERENDIPITY ENGINE SECTION -->
+<div class="serendipity-section" id="serendipity-section">
+
+  <div style="margin-bottom:16px;">
+    <div class="section-label">Serendipity Engine — AI-Native Experimental Design</div>
+  </div>
+
+  <div class="ser-loading" id="serendipity-loading" style="display:none;">
+    // Scanning 50,000 chemical perturbations...
+  </div>
+
+  <div class="ser-error" id="serendipity-error"></div>
+
+  <div id="serendipity-results" style="display:none;">
+
+    <div class="ser-header">
+      <div class="ser-score-circle" id="ser-score">—</div>
+      <div class="ser-header-text">
+        <h3>Serendipity Analysis</h3>
+        <p id="ser-summary">—</p>
+      </div>
+    </div>
+
+    <div class="ser-insight" id="ser-insight">—</div>
+
+    <div class="section-label">Co-Regulated Genes Across 50,000 Perturbations</div>
+    <div class="ser-gene-chips" id="ser-correlated"></div>
+
+    <div id="ser-connections-wrap">
+      <div class="section-label">Failure Ontology Connections</div>
+      <div id="ser-connections"></div>
+    </div>
+
+    <div class="section-label">Experimental Design Suggestions</div>
+    <div id="ser-suggestions"></div>
+
+  </div>
+</div>
+
+<footer>
+  <p>TERRACOTTA — Translational Risk Engine v0.1</p>
+  <p>Powered by Terracotta Ontology v0.1 — 8 failure categories</p>
+</footer>
+
+<script>
+function fillGene(gene) {
+  document.getElementById('geneInput').value = gene;
+  scoreGene();
+}
+
+function getScoreColor(score) {
+  if (score >= 75) return '#751517';
+  if (score >= 50) return '#AD524A';
+  if (score >= 25) return '#C98D69';
+  return '#5a8a6a';
+}
+
+function animateGauge(score) {
+  const circle = document.getElementById('gaugeFill');
+  const number = document.getElementById('gaugeNumber');
+  const circumference = 251.2;
+  const offset = circumference - (score / 100) * circumference;
+  circle.style.strokeDashoffset = offset;
+  circle.style.stroke = getScoreColor(score);
+
+  let current = 0;
+  const step = score / 40;
+  const timer = setInterval(() => {
+    current = Math.min(current + step, score);
+    number.textContent = Math.round(current);
+    if (current >= score) clearInterval(timer);
+  }, 25);
+}
+
+function setSignal(id, score, finding) {
+  document.getElementById(id + 'score').textContent = score;
+  document.getElementById(id + 'score').style.color = getScoreColor(score);
+  document.getElementById(id + 'bar').style.width = score + '%';
+  document.getElementById(id + 'bar').style.background = getScoreColor(score);
+  document.getElementById(id + 'finding').textContent = finding;
+}
+
+async function scoreGene() {
+  const gene = document.getElementById('geneInput').value.trim();
+  if (!gene) return;
+
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('scoreBtn').disabled = true;
+
+  try {
+    const res = await fetch('/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gene })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+
+    // Verdict
+    document.getElementById('verdictGene').textContent = data.gene;
+    document.getElementById('verdictSummary').textContent = data.summary;
+    animateGauge(data.overall_risk_score);
+
+    const badge = document.getElementById('killBadge');
+    badge.textContent = data.kill_or_pursue;
+    badge.className = 'kill-badge ' + data.kill_or_pursue;
+
+    // Signal layers
+    const sl = data.signal_layers;
+    setSignal('s1', sl.species_conservation.score, sl.species_conservation.finding);
+    setSignal('s2', sl.tissue_expression.score, sl.tissue_expression.finding);
+    setSignal('s3', sl.pathway_topology.score, sl.pathway_topology.finding);
+    setSignal('s4', sl.historical_concordance.score, sl.historical_concordance.finding);
+
+    // Assessment
+    document.getElementById('categoryBadge').textContent = 'Category ' + data.primary_failure_category;
+    document.getElementById('categoryName').textContent = data.primary_failure_name;
+    document.getElementById('modelRec').textContent = data.model_recommendation;
+
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    alert('Error: ' + err.message);
+  } finally {
+    document.getElementById('scoreBtn').disabled = false;
+  }
+}
+
+document.getElementById('geneInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') scoreGene();
+});
+// ── SERENDIPITY ENGINE ────────────────────────────────────────────────────
+async function runSerendipity() {
+  const gene = document.getElementById('geneInput').value.trim().toUpperCase();
+  if (!gene) return;
+
+  document.getElementById('serendipity-section').style.display = 'block';
+  document.getElementById('serendipity-loading').style.display = 'block';
+  document.getElementById('serendipity-results').style.display = 'none';
+
+  try {
+    const res = await fetch(`/serendipity/${gene}`);
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById('serendipity-loading').style.display = 'none';
+      document.getElementById('serendipity-error').textContent = data.error;
+      document.getElementById('serendipity-error').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('serendipity-loading').style.display = 'none';
+    document.getElementById('serendipity-results').style.display = 'block';
+    document.getElementById('serendipity-error').style.display = 'none';
+
+    // Score
+    document.getElementById('ser-score').textContent = data.serendipity_score;
+    document.getElementById('ser-summary').textContent = data.summary;
+    document.getElementById('ser-insight').textContent = data.serendipitous_insight;
+
+    // Correlated genes
+    const corrHtml = data.correlated_genes.map(g => `
+      <div class="ser-gene-chip ${g.correlation > 0 ? 'up' : 'down'}">
+        <span class="ser-gene-name">${g.gene}</span>
+        <span class="ser-gene-corr">r=${g.correlation}</span>
+      </div>
+    `).join('');
+    document.getElementById('ser-correlated').innerHTML = corrHtml;
+
+    // Failure connections
+    if (data.failure_ontology_connections.length > 0) {
+      const connHtml = data.failure_ontology_connections.map(c => `
+        <div class="ser-connection-card">
+          <div class="ser-conn-header">
+            <span class="ser-conn-gene">${c.connected_via_gene}</span>
+            <span class="ser-conn-arrow">→</span>
+            <span class="ser-conn-target">${c.failed_target}</span>
+            <span class="ser-conn-cat">${c.failure_category}</span>
+          </div>
+          <div class="ser-conn-indication">${c.indication}</div>
+          <div class="ser-conn-note">${c.serendipitous_note}</div>
+        </div>
+      `).join('');
+      document.getElementById('ser-connections').innerHTML = connHtml;
+      document.getElementById('ser-connections-wrap').style.display = 'block';
+    } else {
+      document.getElementById('ser-connections-wrap').style.display = 'none';
+    }
+
+    // Experimental suggestions
+    const suggHtml = data.experimental_design_suggestions.map((s, i) => `
+      <div class="ser-suggestion">
+        <div class="ser-sugg-header">
+          <span class="ser-sugg-num">${i + 1}</span>
+          <span class="ser-sugg-priority ${s.priority}">${s.priority}</span>
+          <span class="ser-sugg-type">${s.type.replace(/_/g, ' ')}</span>
+        </div>
+        <div class="ser-sugg-text">${s.suggestion}</div>
+        <div class="ser-sugg-rationale">${s.rationale}</div>
+      </div>
+    `).join('');
+    document.getElementById('ser-suggestions').innerHTML = suggHtml;
+
+  } catch (err) {
+    document.getElementById('serendipity-loading').style.display = 'none';
+    document.getElementById('serendipity-error').textContent = 'Error: ' + err.message;
+    document.getElementById('serendipity-error').style.display = 'block';
+  }
+}
+
+</script>
+
+</body>
+</html>
+
+
+
+

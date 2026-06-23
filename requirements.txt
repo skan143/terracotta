@@ -1,0 +1,5 @@
+flask
+groq
+numpy
+scikit-learn
+h5py

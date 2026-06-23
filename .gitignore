@@ -1,0 +1,7 @@
+.env
+*.gctx
+terracotta_lincs_cache.npy
+terracotta_lincs_meta.json
+__pycache__
+*.pyc
+venv/
