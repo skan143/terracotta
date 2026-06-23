@@ -3,7 +3,7 @@ import numpy as np
 import csv
 import json
 from flask import Blueprint, jsonify
-from sklearn.metrics.pairwise import cosine_similarity
+import os
 
 CACHE_PATH = "/Users/sanvik/terracotta_lincs_cache.npy"
 META_PATH = "/Users/sanvik/terracotta_lincs_meta.json"
