@@ -5,8 +5,9 @@ import json
 from flask import Blueprint, jsonify
 import os
 
-CACHE_PATH = "/Users/sanvik/terracotta_lincs_cache.npy"
-META_PATH = "/Users/sanvik/terracotta_lincs_meta.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CACHE_PATH = os.path.join(BASE_DIR, "terracotta_lincs_cache.npy")
+META_PATH = os.path.join(BASE_DIR, "terracotta_lincs_meta.json")
 FAILURES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terracotta_failures_100.csv")
 
 serendipity_bp = Blueprint('serendipity', __name__)
