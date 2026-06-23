@@ -46,7 +46,7 @@ RISK_LEVELS = {
 # ── LOAD DATASET ──────────────────────────────────────────────────────────────
 def load_failure_dataset():
     cases = []
-    filepath = "/Users/sanvik/terracotta_failures_100.csv"
+    filepath = os.path.join(os.path.dirname(__file__), "terracotta_failures_100.csv")
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -289,7 +289,11 @@ def dataset_stats():
         "ontology_version": "v0.2",
         "dataset_version": "terracotta_failures_100"
     })
+
 from serendipity import serendipity_bp
 app.register_blueprint(serendipity_bp)
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
+
+

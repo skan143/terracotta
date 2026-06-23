@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 CACHE_PATH = "/Users/sanvik/terracotta_lincs_cache.npy"
 META_PATH = "/Users/sanvik/terracotta_lincs_meta.json"
-FAILURES_PATH = "/Users/sanvik/terracotta_failures_100.csv"
+FAILURES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terracotta_failures_100.csv")
 
 serendipity_bp = Blueprint('serendipity', __name__)
 
