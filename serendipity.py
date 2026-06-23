@@ -19,16 +19,19 @@ try:
     with open(META_PATH, 'r') as f:
         _meta = json.load(f)
     _cache_available = True
-    print(f"✓ Cache loaded: {_cache.shape[0]:,} perturbations x {_cache.shape[1]} genes")
+    if _cache_available:
+        print(f"✓ Cache loaded: {_cache.shape[0]:,} perturbations x {_cache.shape[1]} genes")
+    else:
+        print("⚠ Cache not available — serendipity engine disabled")
 except Exception as e:
     print(f"⚠ Cache not available: {e}")
     _cache = None
     _meta = {"symbols": [], "pert_ids_sample": []}
 
-_symbols = _meta['symbols']
+_symbols = _meta.get('symbols', [])
 _symbol_to_col = {s: i for i, s in enumerate(_symbols)}
-print(f"✓ Cache loaded: {_cache.shape[0]:,} perturbations x {_cache.shape[1]} genes")
-print(f"✓ Genes available: {_symbols}")
+if _symbols:
+    print(f"✓ Genes available: {_symbols}")
 
 # ── LOAD FAILURES ─────────────────────────────────────────────────────────────
 def load_failures():
