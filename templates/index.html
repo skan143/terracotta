@@ -667,6 +667,148 @@
   border-radius: 4px;
   margin-bottom: 16px;
 }
+/* DISCOVERY ENGINE */
+.discovery-section {
+  display: none;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.disc-insight-box {
+  background: rgba(117, 21, 23, 0.08);
+  border: 1px solid rgba(117, 21, 23, 0.25);
+  border-radius: 6px;
+  padding: 16px 20px;
+  font-size: 14px;
+  color: var(--white);
+  opacity: 0.9;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.disc-connection {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px;
+  margin-bottom: 10px;
+}
+
+.disc-conn-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.disc-conn-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--clay);
+  border: 1px solid rgba(201,141,105,0.3);
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.disc-conn-confidence {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.disc-conn-confidence.high {
+  background: rgba(201,141,105,0.15);
+  color: var(--clay);
+  border: 1px solid rgba(201,141,105,0.3);
+}
+
+.disc-conn-confidence.medium {
+  background: rgba(173,82,74,0.15);
+  color: var(--terra);
+  border: 1px solid rgba(173,82,74,0.3);
+}
+
+.disc-conn-confidence.low {
+  background: rgba(117,21,23,0.15);
+  color: #ff6b6b;
+  border: 1px solid rgba(117,21,23,0.3);
+}
+
+.disc-old-finding {
+  font-size: 13px;
+  color: var(--white);
+  opacity: 0.6;
+  font-style: italic;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.disc-modern {
+  font-size: 14px;
+  color: var(--white);
+  opacity: 0.85;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.disc-implication {
+  font-size: 13px;
+  color: var(--clay);
+  line-height: 1.5;
+}
+
+.disc-paper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.disc-paper-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--white);
+  opacity: 0.4;
+  margin-bottom: 6px;
+}
+
+.disc-paper-title {
+  display: block;
+  font-size: 14px;
+  color: var(--clay);
+  text-decoration: none;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.disc-paper-title:hover { opacity: 0.8; }
+
+.disc-paper-abstract {
+  font-size: 12px;
+  color: var(--white);
+  opacity: 0.5;
+  line-height: 1.5;
+}
+
+.disc-recommended {
+  font-size: 13px;
+  color: var(--white);
+  opacity: 0.6;
+  font-style: italic;
+  padding: 12px 16px;
+  border-left: 2px solid var(--clay);
+  margin-top: 16px;
+}
+
+
+
+
+
 </style>
 </head>
 <body>
@@ -683,7 +825,7 @@
 
   <div class="input-row">
     <input class="gene-input" id="geneInput" type="text" placeholder="Enter gene name (e.g. BACE1)" maxlength="20" />
-    <button class="score-btn" id="scoreBtn" onclick="scoreGene(); runSerendipity();">Score Target</button>
+    <button class="score-btn" id="scoreBtn" onclick="scoreGene(); runSerendipity(); runDiscovery();">Score Target</button>
   </div>
   <div class="example-genes">
     Try:
@@ -810,6 +952,34 @@
 
   </div>
 </div>
+
+<!-- DISCOVERY ENGINE SECTION -->
+<div class="discovery-section" id="discovery-section">
+  <div style="margin-bottom:16px;">
+    <div class="section-label">Dead Web Discovery — Historical & Forgotten Literature</div>
+  </div>
+
+  <div class="ser-loading" id="discovery-loading" style="display:none;">
+    // Mining pre-1990 literature and forgotten manuscripts...
+  </div>
+
+  <div id="discovery-results" style="display:none;">
+
+    <div class="section-label" id="disc-papers-count"></div>
+
+    <div class="disc-insight-box" id="disc-insight"></div>
+
+    <div class="section-label">Serendipitous Connections Across Time</div>
+    <div id="disc-connections"></div>
+
+    <div class="section-label">Historical Papers Surfaced</div>
+    <div id="disc-papers"></div>
+
+    <div class="disc-recommended" id="disc-recommended"></div>
+
+  </div>
+</div>
+
 
 <footer>
   <p>TERRACOTTA — Translational Risk Engine v0.1</p>
@@ -986,10 +1156,70 @@ async function runSerendipity() {
   }
 }
 
+async function runDiscovery() {
+  const gene = document.getElementById('geneInput').value.trim().toUpperCase();
+  if (!gene) return;
+
+  document.getElementById('discovery-section').style.display = 'block';
+  document.getElementById('discovery-loading').style.display = 'block';
+  document.getElementById('discovery-results').style.display = 'none';
+
+  try {
+    const res = await fetch(`/discover/${gene}`);
+    const data = await res.json();
+
+    document.getElementById('discovery-loading').style.display = 'none';
+    document.getElementById('discovery-results').style.display = 'block';
+
+    // Papers found summary
+    document.getElementById('disc-papers-count').textContent =
+      `${data.papers_found.total} papers found across ${Object.keys(data.papers_found).length - 1} sources`;
+
+    // Most valuable insight
+    document.getElementById('disc-insight').textContent = data.most_valuable_insight;
+
+    // Serendipitous connections
+    const connHtml = data.serendipitous_connections.map(c => `
+      <div class="disc-connection">
+        <div class="disc-conn-header">
+          <span class="disc-conn-type">${c.connection_type.replace(/_/g, ' ')}</span>
+          <span class="disc-conn-confidence ${c.confidence.toLowerCase()}">${c.confidence}</span>
+        </div>
+        <div class="disc-old-finding">📜 ${c.old_finding}</div>
+        <div class="disc-modern">${c.modern_relevance}</div>
+        <div class="disc-implication">→ ${c.implication}</div>
+      </div>
+    `).join('');
+    document.getElementById('disc-connections').innerHTML = connHtml || '<p style="opacity:0.4;font-size:13px;">No serendipitous connections found.</p>';
+
+    // Historical papers
+    const papersHtml = data.historical_papers.slice(0, 4).map(p => `
+      <div class="disc-paper">
+        <div class="disc-paper-meta">${p.source} · ${p.year} · ${p.authors?.split(',')[0] || ''}</div>
+        <a class="disc-paper-title" href="${p.url}" target="_blank">${p.title}</a>
+        <div class="disc-paper-abstract">${p.abstract?.slice(0, 200)}...</div>
+      </div>
+    `).join('');
+    document.getElementById('disc-papers').innerHTML = papersHtml;
+
+    // Recommended search
+    document.getElementById('disc-recommended').textContent = data.recommended_search;
+
+  } catch (err) {
+    document.getElementById('discovery-loading').style.display = 'none';
+    document.getElementById('discovery-results').innerHTML =
+      `<p style="color:#ff6b6b;font-size:13px;">Error: ${err.message}</p>`;
+  }
+}
+
+
+
+
 </script>
 
 </body>
 </html>
+
 
 
 
