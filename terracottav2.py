@@ -292,6 +292,8 @@ def dataset_stats():
 
 from serendipity import serendipity_bp
 app.register_blueprint(serendipity_bp)
+from discovery import discovery_bp
+app.register_blueprint(discovery_bp)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
