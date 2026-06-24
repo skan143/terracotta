@@ -290,6 +290,76 @@ def dataset_stats():
         "dataset_version": "terracotta_failures_100"
     })
 
+@app.route("/feedback", methods=["POST"])
+def submit_feedback():
+    data = request.get_json()
+    
+    gene = data.get("gene", "").strip().upper()
+    risk_score = data.get("risk_score", "")
+    decision = data.get("decision", "").strip()
+    next_experiment = data.get("next_experiment", "").strip()
+    score_agreement = data.get("score_agreement", "").strip()
+    disagreement_reason = data.get("disagreement_reason", "").strip()
+    researcher_type = data.get("researcher_type", "").strip()
+    
+    if not gene or not decision:
+        return jsonify({"error": "Gene and decision are required"}), 400
+    
+    import datetime
+    timestamp = datetime.datetime.utcnow().isoformat()
+    
+    feedback_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "feedback_log.csv"
+    )
+    
+    # Create file with header if it doesn't exist
+    file_exists = os.path.exists(feedback_path)
+    
+    try:
+        with open(feedback_path, "a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow([
+                    "timestamp", "gene", "risk_score", "decision",
+                    "next_experiment", "score_agreement",
+                    "disagreement_reason", "researcher_type"
+                ])
+            writer.writerow([
+                timestamp, gene, risk_score, decision,
+                next_experiment, score_agreement,
+                disagreement_reason, researcher_type
+            ])
+        return jsonify({
+            "status": "success",
+            "message": "Feedback logged. Thank you — this makes Terracotta smarter.",
+            "timestamp": timestamp
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/feedback/log", methods=["GET"])
+def view_feedback():
+    """View all submitted feedback — admin endpoint."""
+    feedback_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "feedback_log.csv"
+    )
+    entries = []
+    try:
+        with open(feedback_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                entries.append(row)
+    except Exception:
+        pass
+    return jsonify({
+        "total_submissions": len(entries),
+        "entries": entries
+    })
+
+
+
 from serendipity import serendipity_bp
 app.register_blueprint(serendipity_bp)
 from discovery import discovery_bp

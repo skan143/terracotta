@@ -805,7 +805,123 @@
   margin-top: 16px;
 }
 
+/* FEEDBACK LOOP */
+.feedback-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
 
+.feedback-intro {
+  font-size: 14px;
+  color: var(--white);
+  opacity: 0.5;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.fb-field {
+  margin-bottom: 20px;
+}
+
+.fb-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.fb-input {
+  width: 100%;
+  background: var(--black);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.fb-input:focus { border-color: var(--clay); }
+
+.fb-select {
+  width: 100%;
+  background: var(--black);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.fb-select:focus { border-color: var(--clay); }
+
+.fb-radio-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.fb-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--white);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.fb-submit {
+  width: 100%;
+  background: var(--terra);
+  color: var(--white);
+  border: none;
+  padding: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+
+.fb-submit:hover { background: var(--clay); }
+
+.fb-success {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(201, 141, 105, 0.1);
+  border: 1px solid var(--clay);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--clay);
+  text-align: center;
+}
+
+.fb-error {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: rgba(117,21,23,0.1);
+  border: 1px solid var(--crimson);
+  border-radius: 4px;
+  font-size: 13px;
+  color: #ff6b6b;
+}
 
 
 
@@ -980,7 +1096,85 @@
   </div>
 </div>
 
+<!-- FEEDBACK LOOP — STEP 2 OF CLOSED LOOP -->
+<div class="feedback-section" id="feedback-section" style="display:none;">
+  <div style="max-width:820px;margin:0 auto;padding:0 24px 80px;">
+    
+    <div class="section-label">Close The Loop — Submit Your Outcome</div>
+    
+    <div class="feedback-card">
+      <div class="feedback-intro">
+        Every outcome you log makes Terracotta smarter for every researcher 
+        who comes after you. This is how the closed loop closes.
+      </div>
 
+      <div class="feedback-form">
+        <input type="hidden" id="fb-gene" value="">
+        <input type="hidden" id="fb-score" value="">
+
+        <div class="fb-field">
+          <label class="fb-label">What did you decide about this target?</label>
+          <select class="fb-select" id="fb-decision">
+            <option value="">Select a decision...</option>
+            <option value="pursue">Pursue — moving forward with experiments</option>
+            <option value="caution">Caution — need more validation first</option>
+            <option value="kill">Kill — deprioritizing this target</option>
+            <option value="modify">Modify — changing the approach based on this</option>
+          </select>
+        </div>
+
+        <div class="fb-field">
+          <label class="fb-label">What experiment are you running next?</label>
+          <input class="fb-input" type="text" id="fb-experiment" 
+            placeholder="e.g. Pathway compensation assay in HepG2 cells..." />
+        </div>
+
+        <div class="fb-field">
+          <label class="fb-label">Does the risk score feel accurate?</label>
+          <div class="fb-radio-group">
+            <label class="fb-radio">
+              <input type="radio" name="agreement" value="agree"> Yes, accurate
+            </label>
+            <label class="fb-radio">
+              <input type="radio" name="agreement" value="partially"> Partially
+            </label>
+            <label class="fb-radio">
+              <input type="radio" name="agreement" value="disagree"> No, I'd score it differently
+            </label>
+          </div>
+        </div>
+
+        <div class="fb-field" id="fb-disagreement-field" style="display:none;">
+          <label class="fb-label">Why would you score it differently?</label>
+          <input class="fb-input" type="text" id="fb-disagreement" 
+            placeholder="e.g. The species conservation score is too low because..." />
+        </div>
+
+        <div class="fb-field">
+          <label class="fb-label">Your role</label>
+          <select class="fb-select" id="fb-researcher-type">
+            <option value="">Select...</option>
+            <option value="academic_pi">Academic PI</option>
+            <option value="postdoc">Postdoc / Graduate Student</option>
+            <option value="biotech_scientist">Biotech Scientist</option>
+            <option value="pharma_scientist">Pharma Scientist</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <button class="fb-submit" id="fb-submit-btn" onclick="submitFeedback()">
+          Submit Outcome → Close The Loop
+        </button>
+
+        <div class="fb-success" id="fb-success" style="display:none;">
+          ✓ Logged. Terracotta just got smarter.
+        </div>
+
+        <div class="fb-error" id="fb-error" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <footer>
   <p>TERRACOTTA — Translational Risk Engine v0.1</p>
   <p>Powered by Terracotta Ontology v0.1 — 8 failure categories</p>
@@ -1053,6 +1247,9 @@ async function scoreGene() {
     const badge = document.getElementById('killBadge');
     badge.textContent = data.kill_or_pursue;
     badge.className = 'kill-badge ' + data.kill_or_pursue;
+    document.getElementById('fb-gene').value = data.gene;
+    document.getElementById('fb-score').value = data.overall_risk_score;
+    document.getElementById('feedback-section').style.display = 'block';
 
     // Signal layers
     const sl = data.signal_layers;
@@ -1212,7 +1409,70 @@ async function runDiscovery() {
   }
 }
 
+// ── FEEDBACK LOOP ─────────────────────────────────────────────────────────
+document.querySelectorAll('input[name="agreement"]').forEach(radio => {
+  radio.addEventListener('change', e => {
+    const field = document.getElementById('fb-disagreement-field');
+    field.style.display = e.target.value === 'disagree' ? 'block' : 'none';
+  });
+});
 
+function showFeedbackForm(gene, score) {
+  document.getElementById('fb-gene').value = gene;
+  document.getElementById('fb-score').value = score;
+  document.getElementById('feedback-section').style.display = 'block';
+  document.getElementById('feedback-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function submitFeedback() {
+  const gene = document.getElementById('fb-gene').value;
+  const score = document.getElementById('fb-score').value;
+  const decision = document.getElementById('fb-decision').value;
+  const experiment = document.getElementById('fb-experiment').value;
+  const agreement = document.querySelector('input[name="agreement"]:checked');
+  const disagreement = document.getElementById('fb-disagreement').value;
+  const researcherType = document.getElementById('fb-researcher-type').value;
+
+  if (!decision) {
+    document.getElementById('fb-error').textContent = 'Please select a decision.';
+    document.getElementById('fb-error').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('fb-submit-btn').disabled = true;
+  document.getElementById('fb-error').style.display = 'none';
+
+  try {
+    const res = await fetch('/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gene,
+        risk_score: score,
+        decision,
+        next_experiment: experiment,
+        score_agreement: agreement ? agreement.value : '',
+        disagreement_reason: disagreement,
+        researcher_type: researcherType
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      document.getElementById('fb-success').style.display = 'block';
+      document.getElementById('fb-submit-btn').style.display = 'none';
+    } else {
+      document.getElementById('fb-error').textContent = data.error;
+      document.getElementById('fb-error').style.display = 'block';
+      document.getElementById('fb-submit-btn').disabled = false;
+    }
+  } catch (err) {
+    document.getElementById('fb-error').textContent = 'Error: ' + err.message;
+    document.getElementById('fb-error').style.display = 'block';
+    document.getElementById('fb-submit-btn').disabled = false;
+  }
+}
 
 
 </script>
