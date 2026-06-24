@@ -21,7 +21,7 @@ def search_europepmc(gene, max_results=10):
     try:
         url = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
         params = {
-            "query": f"{gene} AND (FIRST_PDATE:[1940 TO 1990])",
+            "query": f'"{gene}" AND (FIRST_PDATE:[1940 TO 1990])',
             "format": "json",
             "pageSize": max_results,
             "resultType": "core",
@@ -55,7 +55,7 @@ def search_pubmed_obscure(gene, max_results=10):
         search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
         params = {
             "db": "pubmed",
-            "term": f"{gene}[tiab] AND (1960[pdat]:1995[pdat])",
+            "term": f'"{gene}"[tiab] AND (1960[pdat]:1995[pdat])',
             "retmax": max_results,
             "retmode": "json",
             "sort": "relevance"
@@ -321,4 +321,3 @@ def discover_status():
             "bioRxiv preprints"
         ]
     })
-    
